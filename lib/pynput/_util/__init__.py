@@ -70,6 +70,8 @@ class AbstractListener(threading.Thread):
     def __init__(self, suppress=False, **kwargs):
         super(AbstractListener, self).__init__()
 
+        self._catch = kwargs.pop("catch", True)
+
         def wrapper(f):
             def inner(*args):
                 if f(*args) is False:
@@ -153,7 +155,7 @@ class AbstractListener(threading.Thread):
             try:
                 return f(self, *args, **kwargs)
             except Exception as e:
-                if not isinstance(e, self._HANDLED_EXCEPTIONS):
+                if not isinstance(e, self._HANDLED_EXCEPTIONS) and self._catch:
                     self._queue.put(
                         None if isinstance(e, cls.StopException)
                         else sys.exc_info())
